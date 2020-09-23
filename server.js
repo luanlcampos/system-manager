@@ -64,7 +64,7 @@ app.get("/departments", function(req, res){
 })
 
 app.get("*", function(req, res){
-    res.send("Page not found")
+    res.sendFile(path.join(__dirname, "views/notfound.html"))
 })
 
 //first read the data, then if it returns a resolve, it loads the server
