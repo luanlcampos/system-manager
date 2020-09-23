@@ -11,7 +11,7 @@ var path = require("path")
 // const { initialize } = require("./data-service")
 var app = express()
 
-var HTTP_PORT = process.env.HTTP_PORT || 8080
+var HTTP_PORT = process.env.PORT || 8080
 
 
 app.use(express.static("public"))
