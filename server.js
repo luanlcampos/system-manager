@@ -13,7 +13,6 @@ var app = express()
 
 var HTTP_PORT = process.env.HTTP_PORT || 8080
 
-console.log("Express http server listening on port " + HTTP_PORT);
 
 app.use(express.static("public"))
 
@@ -71,7 +70,7 @@ app.get("*", function(req, res){
 //first read the data, then if it returns a resolve, it loads the server
 data.initialize().then(() => {
     app.listen(HTTP_PORT, () => {
-        console.log("app listening on: " + HTTP_PORT)
+        console.log("Express http server listening on port " + HTTP_PORT)
     })
 }).catch((err) => {
     console.log(err)
