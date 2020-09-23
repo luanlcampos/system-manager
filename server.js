@@ -8,13 +8,10 @@
 var data = require("./data-service")
 var express = require("express")
 var path = require("path")
-// const { initialize } = require("./data-service")
 var app = express()
+app.use(express.static('public'))
 
 var HTTP_PORT = process.env.PORT || 8080
-
-
-app.use(express.static("public"))
 
 //sending the home page
 app.get("/", function(req, res){
