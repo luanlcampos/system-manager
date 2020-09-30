@@ -9,7 +9,7 @@ var data = require("./data-service")
 var express = require("express")
 var path = require("path")
 var app = express()
-app.use(express.static('public'))
+app.use(express.static(path.join(__dirname,'/public')))
 
 var HTTP_PORT = process.env.PORT || 8080
 
