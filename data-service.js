@@ -46,3 +46,75 @@ module.exports.getDepartments = () => {
                 resolve(departments);
         })
 }
+
+module.exports.addEmployee = (employeeData) => {
+        return new Promise (function(resolve, reject){
+                if (!employeeData) reject ("Not able to read")
+                else {
+                        if (employeeData.isManager == undefined) {
+                                employeeData.isManager = false;
+                        } 
+                        else employeeData.isManager = true;
+                        employeeData.employeeNum = employeeData.length + 1; //setting the employee id to be the last id + 1
+                        employees.push(employeeData);
+
+                }
+                resolve();
+        })
+}
+
+
+module.exports.getEmployeesByStatus = (status) => {
+        return new Promise (function(resolve, reject) {
+                var empByStatus = [];
+                for (let i = 0; i < employees.length; i++) {
+                        if (employees[i].status == status) {
+                                empByStatus.push(employees[i]);
+                        }
+                }
+                if (empByStatus.length == 0) reject("No results returned")
+                else resolve(empByStatus);
+        })
+}
+
+module.exports.getEmployeesByDepartment = (department) => {
+        return new Promise (function(resolve, reject) {
+                var empByDp = []
+                for (let i =0; i < employees.length; i++) {
+                        if (employees[i].department == department) {
+                                empByDp.push(employees[i])
+                        }
+                }
+                if (empByDp.length == 0) reject("No results returned")
+                else resolve(empByDp)
+        })          
+}
+
+module.exports.getEmployeesByManager = (manager) => {
+        return new Promise((resolve, reject) => {
+                var empByManager = []
+                for (let i =0; i < employees.length; i++) {
+                        if (employees[i].employeeManagerNum == manager) {
+                                empByManager.push(employees[i])
+                        }
+                }
+                if(empByManager.length == 0) reject("No results returned")
+                else resolve(empByManager)
+        })
+}
+
+
+module.exports.getEmployeeByNum = (num) => {
+        return new Promise ((resolve, reject) => {
+                let emp = []
+                for (let i =0; i < employees.length; i++) {
+                        if (employees[i].employeeNum == num){
+                                emp.push(employees[i])
+                        }
+                }
+                if (emp.length == 0) reject ("No results returned")
+                else resolve(emp)
+        })
+}
+
+

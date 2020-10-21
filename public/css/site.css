@@ -41,6 +41,7 @@ article {
 
 h2 {
     font-weight: bold;
+    color: #fff;
 }
 
 article h2 {
@@ -57,4 +58,14 @@ article h2 {
     border-radius: 5px;
     background-color:  #404f62;
     color: white;
+}
+
+.row {
+    color: #fff;
+}
+
+
+.m-form, legend{
+    background-color: #404f62;
+    color: #fff;
 }
