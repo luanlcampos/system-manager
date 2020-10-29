@@ -69,3 +69,14 @@ article h2 {
     background-color: #404f62;
     color: #fff;
 }
+
+.btn {
+    background: #ad5c28;
+    color: white;
+    border: none;
+}
+
+.btn:hover {
+    background-color:  #263544;
+
+}
