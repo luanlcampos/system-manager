@@ -34,9 +34,12 @@
             {{#navLink "/images/add"}}Add Image{{/navLink}}
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="/images">Images</a></li>
-            <li><a href="/employees">Employees</a></li>
-            <li><a href="/departments">Departments</a></li> 
+            {{#navLink "/images"}} Images {{/navLink}}
+            {{!-- <li><a href="/images">Images</a></li> --}}
+            {{#navLink "/employees"}} Employees {{/navLink}}
+            {{!-- <li><a href="/employees">Employees</a></li> --}}
+            {{#navLink "/departments"}} Departments {{/navLink}}
+            {{!-- <li><a href="/departments">Departments</a></li>  --}}
           </ul>
         </div><!-- /.navbar-collapse -->
       </div><!-- /.container-fluid -->
