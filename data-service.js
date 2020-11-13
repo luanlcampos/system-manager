@@ -4,12 +4,13 @@
 
 const Sequelize = require('sequelize');
 //Setting dabatase connection
-var sequelize = new Sequelize('dalhq4tr0gjoj0', 'ictcmmsbszrumn', '0b71c40633f17ccac482bdac4069054493c1afa1952f4179ca0d030000c8f9ca', {
-        host: 'ec2-107-20-104-234.compute-1.amazonaws.com',
+var sequelize = new Sequelize('dh3q1s84455hu', 'htijeihdyixvew', '2c34c779de747790c04e61fff70e825dc454761fb59b6eb9d312d860f09b539d', {
+        host: 'ec2-23-20-168-40.compute-1.amazonaws.com',
         dialect: 'postgres',
         port: 5432,
         dialectOptions: {
-                ssl: true
+                ssl: true,
+                rejectUnauthorized: false
         }
 });
 
