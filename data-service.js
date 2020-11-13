@@ -10,7 +10,6 @@ var sequelize = new Sequelize('dh3q1s84455hu', 'htijeihdyixvew', '2c34c779de7477
         port: 5432,
         dialectOptions: {
                 ssl: true,
-                rejectUnauthorized: false
         }
 });
 
