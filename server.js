@@ -2,7 +2,7 @@
  I declare that this assignment is my own work in accordance with Seneca Academic Policy. No part  
  of this assignment has been copied manually or electronically from any other source 
  (including 3rd party web sites) or distributed to other students. * 
- Name: Luan Lima Campos Student ID: 119386191 Date: 2020-09-23 * 
+ Name: Luan Lima Campos Student ID: 119386191 Date: 2020-11-14 * 
  Online (Heroku) Link: https://mysystemmanager.herokuapp.com/ * 
  ********************************************************************************/
 const exphbs = require("express-handlebars")
@@ -13,6 +13,7 @@ var multer = require("multer") //deal with images
 var bodyParser = require("body-parser") //deal with forms
 var app = express() //start an express app
 var fs = require("fs") //fs.readdir
+const { resolve } = require("path")
 app.use(express.static('public')); //set the public dir as static
 app.engine('.hbs', exphbs({
     extname: '.hbs',
@@ -71,9 +72,10 @@ app.get("/employees", function (req, res) {
     if (req.query.status) {
         data.getEmployeesByStatus(req.query.status)
             .then((data) => {
-                res.render("employees", { "employees": data })
+                if (data.length > 0) res.render("employees", { employees: data });
+                else res.render("employees", { message: "No results returned." })
             }).catch((err) => {
-                res.render({ message: "no results" });
+                res.render({ message: "No results returned." });
             })
     }
 
@@ -81,7 +83,8 @@ app.get("/employees", function (req, res) {
     else if (req.query.department) {
         data.getEmployeesByDepartment(req.query.department)
             .then((data) => {
-                res.render("employees", { "employees": data })
+                if (data.length > 0) res.render("employees", { employees: data });
+                else res.render("employees", { message: "No results returned." })
             }).catch((err) => {
                 res.render({ message: "no results" });
             })
@@ -91,7 +94,8 @@ app.get("/employees", function (req, res) {
     else if (req.query.manager) {
         data.getEmployeesByManager(req.query.manager)
             .then((data) => {
-                res.render("employees", { "employees": data })
+                if (data.length > 0) res.render("employees", { employees: data });
+                else res.render("employees", { message: "No results returned." })
             }).catch((err) => {
                 res.render({ message: "no results" })
             })
@@ -101,7 +105,8 @@ app.get("/employees", function (req, res) {
     else {
         data.getAllEmployees()
             .then((data) => {
-                res.render("employees", { "employees": data })
+                if (data.length > 0) res.render("employees", { employees: data });
+                else res.render("employees", { message: "No results returned." })
             })
             .catch((err) => {
                 res.render({ message: "no results" })
@@ -109,21 +114,66 @@ app.get("/employees", function (req, res) {
     }
 })
 
-//getting an employee by id in the url
-app.get("/employee/:value", (req, res) => {
-    data.getEmployeeByNum(req.params.value)
+
+app.get("/employee/:empNum", (req, res) => {
+    // initialize an empty object to store the values
+    let viewData = {};
+    data.getEmployeeByNum(req.params.empNum).then((data) => {
+        if (data) {
+            viewData.employee = data; //store employee data in the "viewData" object as "employee"
+        } else {
+            viewData.employee = null; // set employee to null if none were returned
+        }
+    }).catch(() => {
+        viewData.employee = null; // set employee to null if there was an error
+    }).then(data.getDepartments)
         .then((data) => {
-            res.render("employee", { employee: data })
-        }).catch((err) => {
-            res.render({ message: "no results" })
-        })
-})
+            viewData.departments = data; // store department data in the "viewData" object as "departments"
+            // loop through viewData.departments and once we have found the departmentId that matches
+            // the employee's "department" value, add a "selected" property to the matching
+            // viewData.departments object
+            for (let i = 0; i < viewData.departments.length; i++) {
+                if (viewData.departments[i].departmentId == viewData.employee.department) {
+                    viewData.departments[i].selected = true;
+                }
+            }
+        }).catch(() => {
+            viewData.departments = []; // set departments to empty if there was an error
+        }).then(() => {
+            if (viewData.employee == null) { // if no employee - return an error
+                res.status(404).send("Employee Not Found");
+            } else {
+                res.render("employee", { viewData: viewData }); // render the "employee" view
+            }
+        });
+});
 
 //route to load the page with the form to add a new employee
 app.get("/employees/add", (req, res) => {
-    res.render(path.join(__dirname, "/views/addEmployee.hbs"))
+    data.getDepartments()
+        .then((data) => {
+            res.render("addEmployee", { departments: data })
+        })
+        .catch((err) => {
+            res.render("addEmployee", { departments: [] });
+        })
+    //res.render(path.join(__dirname, "/views/addEmployee.hbs"))
 })
 
+//delete employee by id
+app.get("/employees/delete/:empNum", (req, res) => {
+    data.deleteEmployeeByNum(req.params.empNum)
+    .then(() => {
+        res.redirect("/employees");
+    }).catch((err) => {
+        res.status(500).send("Unable to Remove Employee / Employee not found");
+    })
+})
+
+//route to get the add for departments
+app.get("/departments/add", (req, res) => {
+    res.render(path.join(__dirname, "/views/addDepartment.hbs"))
+})
 
 //route to load the page with all the images in a json format
 app.get("/images", (req, res) => {
@@ -140,15 +190,24 @@ app.get("/images/add", (req, res) => {
 
 //departments route
 app.get("/departments", function (req, res) {
-    //res.send("TODO: display all of the departments within the departments.json file")
     data.getDepartments()
         .then((data) => {
-            res.render("departments", { "department": data });
+            res.render("departments", { departments: data })
         })
-        .catch((err) => {
-            res.send({ message: err })
-        })
+        .catch(err => res.status(404).send('departments not found'))
 })
+
+//departments by id
+app.get("/department/:departmentId", (req, res) => {
+    data.getDepartmentById(req.params.departmentId)
+        .then((data) => {
+            res.render("department", { department: data });
+        }).catch((err) => {
+            res.status(404).send("Department Not Found")
+        }
+        )
+})
+
 
 //posts
 //post to image adding
@@ -158,20 +217,40 @@ app.post("/images/add", upload.single('imageFile'), (req, res) => {
 
 //post to employees adding
 app.post("/employees/add", (req, res) => {
-    if (data.addEmployee(req.body)) {
-        res.redirect('/employees')
-    }
+    data.addEmployee(req.body)
+    .then(()=> {
+        res.redirect('/employees');
+    }).catch((err) => {
+        res.status(500).send("Unable to Update Employee");
+    })
 })
 
-app.post("/employee/update", (req, res) => { 
-    data.updateEmployee(req.body) 
-    .then((data) => {
-        res.redirect("/employees")
-    })
-    .catch((err) => {
-        console.log(err)
-    })
-     
+//post to departments adding
+app.post("/departments/add", (req, res) => {
+    data.addDepartment(req.body)
+        .then(() => { res.redirect('/departments') })
+        .catch((err) => { message: err });
+})
+//post to update employee
+app.post("/employee/update", (req, res) => {
+    data.updateEmployee(req.body)
+        .then((data) => {
+            res.redirect("/employees")
+        })
+        .catch((err) => {
+            console.log(err)
+        })
+});
+
+//post to update department
+app.post("/departments/update", (req, res) => {
+    data.updateDepartment(req.body)
+        .then(() => {
+            res.redirect("/departments")
+        })
+        .catch((err) => {
+            console.log(err)
+        })
 });
 
 //all the other paths, send the not found page

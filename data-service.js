@@ -1,7 +1,3 @@
-
-//all the functions should return a Promise and pass its data through resolve method or reject method.
-//also use .then() and .catch()
-
 const Sequelize = require('sequelize');
 //Setting dabatase connection
 var sequelize = new Sequelize('dh3q1s84455hu', 'htijeihdyixvew', '2c34c779de747790c04e61fff70e825dc454761fb59b6eb9d312d860f09b539d', {
@@ -9,20 +5,25 @@ var sequelize = new Sequelize('dh3q1s84455hu', 'htijeihdyixvew', '2c34c779de7477
         dialect: 'postgres',
         port: 5432,
         dialectOptions: {
-                ssl: true,
+                ssl: { required: true,
+                        rejectUnauthorized: false}
         }
 });
 
 //creating tables
 //Employee Table/model
 var Employee = sequelize.define('Employee', {
-        employeeNum: {type: Sequelize.INTEGER,
-                      primaryKey: true,
-                      autoIncrement: true},
+        employeeNum: {
+                type: Sequelize.INTEGER,
+                primaryKey: true,
+                autoIncrement: true
+        },
         firstName: Sequelize.STRING,
         lastName: Sequelize.STRING,
+        email: Sequelize.STRING,
         SSN: Sequelize.STRING,
         addressStreet: Sequelize.STRING,
+        addressCity: Sequelize.STRING,
         addressState: Sequelize.STRING,
         addressPostal: Sequelize.STRING,
         maritalStatus: Sequelize.STRING,
@@ -30,7 +31,7 @@ var Employee = sequelize.define('Employee', {
         employeeManagerNum: Sequelize.INTEGER,
         status: Sequelize.STRING,
         department: Sequelize.INTEGER,
-        hireDate: Sequelize.STRING
+        hireDate: Sequelize.STRING,
 });
 //Setting Department Model
 var Department = sequelize.define('Department', {
@@ -43,18 +44,17 @@ var Department = sequelize.define('Department', {
 });
 
 module.exports.initialize = function() {
-        return new Promise(function(resolve, reject){
-                sequelize.sync().then(() => { //connect to the database
-                        resolve();
-                }).catch(() => {
-                        reject("Unable to sync the database");
-                })
-        })
-}
+        return new Promise((resolve, reject) => {
+            sequelize.sync()
+            .then(() => resolve())
+            .catch((err) => reject(err));
+        });
+    };
 
 module.exports.getAllEmployees = () => {
         return new Promise(function(resolve, reject){
                 Employee.findAll().then((data) => {
+                        data = data.map(value => value.dataValues);
                         resolve(data);
                 }).catch((err) => {
                         reject("No results returned.");
@@ -77,7 +77,8 @@ module.exports.getManagers = () => {
 
 module.exports.getDepartments = () => {
         return new Promise (function(resolve, reject) {
-                Department.findAll().then((data)=>{
+                Department.findAll({order: ['departmentId']}).then((data)=>{
+                        data = data.map(value => value.dataValues);
                         resolve(data);
                 }).catch((err)=> {
                         reject("No results returned.")
@@ -97,11 +98,65 @@ module.exports.addEmployee = (employeeData) => {
         })
 }
 
+module.exports.deleteEmployeeByNum = (empNum) => {
+        return new Promise ((resolve, reject) => {
+                Employee.destroy({where: {employeeNum: empNum}})
+                .then(() => {
+                        resolve("Employee deleted.");
+                })
+                .catch((err) => reject("Unable to delete this employee."))
+        })        
+}
+
+module.exports.addDepartment = (departmentData) => {
+        return new Promise (function(resolve, reject){
+                for (let i  in departmentData) {
+                        if (departmentData[i] == ""){
+                                departmentData[i] = null;
+                        }
+                }
+                Department.create(departmentData)
+                .then(() => {resolve()})
+                .catch((err)=> {reject("Unable to create deparment.")})
+        }); 
+}
+
+module.exports.updateDepartment = (departmentData) => {
+        return new Promise (function(resolve, reject) {
+                for (let i  in departmentData) {
+                        if (departmentData[i] == ""){
+                                departmentData[i] = null;
+                        }
+                }
+                Department.update(departmentData, {where: {
+                        departmentId: departmentData.departmentId
+                        }
+                })
+                .then(()=>{
+                        resolve();
+                })
+                .catch((err)=>{reject("Unable to update department.")})
+        })
+}
+
+module.exports.getDepartmentById = (id) => {
+        return new Promise ((resolve, reject) =>{
+                Department.findAll({where: {departmentId: id}})
+                .then((data)=>{ 
+                        data = data.map(value => value.dataValues);
+                        let obj = data[0];
+                        resolve(obj);
+                })
+                .catch((err)=>reject("No results returned"))
+        })
+}
+
 
 module.exports.getEmployeesByStatus = (status) => {
         return new Promise (function(resolve, reject) {
                 Employee.findAll({where: {status: status}})
                 .then((data) => {
+                        data = data.map(value => value.dataValues);
                         resolve(data);
                 }).catch((err) => {
                         reject("No results returned.");
@@ -113,6 +168,7 @@ module.exports.getEmployeesByDepartment = (department) => {
         return new Promise (function(resolve, reject) {
                 Employee.findAll({where: {department: department}})
                 .then((data)=> {
+                        data = data.map(value => value.dataValues);
                         resolve(data);
                 }).catch((err) => {
                         reject("No results returned.");
@@ -124,6 +180,7 @@ module.exports.getEmployeesByManager = (manager) => {
         return new Promise((resolve, reject) => {
                 Employee.findAll({where: {employeeManagerNum: manager}})
                 .then((data)=>{
+                        data = data.map(value => value.dataValues);
                         resolve(data);
                 }).catch((err)=> {
                         reject("No results returned.");
@@ -136,7 +193,8 @@ module.exports.getEmployeeByNum = (num) => {
         return new Promise ((resolve, reject) => {
                 Employee.findAll({where: {employeeNum: num}})
                 .then((data)=>{
-                        resolve(data);
+                        data = data.map(value => value.dataValues);
+                        resolve(data[0]);
                 }).catch((err)=>{
                         reject("No results returned.");
                 })
