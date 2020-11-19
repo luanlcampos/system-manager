@@ -53,7 +53,7 @@ module.exports.initialize = function() {
 
 module.exports.getAllEmployees = () => {
         return new Promise(function(resolve, reject){
-                Employee.findAll().then((data) => {
+                Employee.findAll({order: ['employeeNum']}).then((data) => {
                         data = data.map(value => value.dataValues);
                         resolve(data);
                 }).catch((err) => {
