@@ -170,6 +170,15 @@ app.get("/employees/delete/:empNum", (req, res) => {
     })
 })
 
+//delete department by id
+app.get("/departments/delete/:depNum", (req, res) => {
+    data.deleteDepartmentByNum(req.params.depNum)
+    .then(()=> {
+        res.redirect("/departments");
+    }).catch((err)=>{
+        res.status(500).send("Unable to Remove Employee / Employee not Found");
+    })
+})
 //route to get the add for departments
 app.get("/departments/add", (req, res) => {
     res.render(path.join(__dirname, "/views/addDepartment.hbs"))

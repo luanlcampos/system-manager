@@ -17,6 +17,8 @@
                     <tr>
                         <td><a href="/employees?department={{departmentId}}">{{departmentId}}</a></td>
                         <td><a href="/department/{{departmentId}}">{{departmentName}}</a></td>
+                        <td><a href="/departments/delete/{{departmentId}}" class="btn btn-danger"
+                        onclick="return confirm('Are you sure you want to delete {{departmentName}} department?');">Delete</a></td>
                     </tr>
                     {{/each}}
                 </tbody>

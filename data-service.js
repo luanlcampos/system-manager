@@ -108,6 +108,17 @@ module.exports.deleteEmployeeByNum = (empNum) => {
         })        
 }
 
+module.exports.deleteDepartmentByNum = (depNum) => {
+        return new Promise ((resolve, reject) => {
+                Department.destroy({where: {departmentId: depNum}})
+                .then(()=> {
+                        resolve("Department deleted.");
+                }).catch((err)=> {
+                        reject("Unable to delete this department");
+                })
+        })
+}
+
 module.exports.addDepartment = (departmentData) => {
         return new Promise (function(resolve, reject){
                 for (let i  in departmentData) {
