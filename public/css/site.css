@@ -68,6 +68,7 @@ article h2 {
 .m-form, legend{
     background-color: #404f62;
     color: #fff;
+    border: solid 3px white;
 }
 
 .btn {

@@ -1,5 +1,5 @@
 div class="row">
-<div class="col-md-12">
+<div class="col-md-12 m-form">
     <h2>{{viewData.employee.firstName}} {{ viewData.employee.lastName}} - Employee: {{ viewData.employee.employeeNum}}
     </h2>
     <hr />
@@ -104,7 +104,7 @@ div class="row">
                                 {{#equal viewData.employee.status "Full Time"}} checked {{/equal}} /> Full Time
                         </label>
                         <label class="checkbox-inline">
-                            <input type="radio" id="statusFT" name="status" value="Full Time"
+                            <input type="radio" id="statusPT" name="status" value="Part Time"
                                 {{#equal viewData.employee.status "Part Time"}} checked {{/equal}} /> Part Time
                         </label>
                     </div>
