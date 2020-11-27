@@ -155,10 +155,8 @@ module.exports.getDepartmentById = (id) => {
                 Department.findAll({where: {departmentId: id}})
                 .then((data)=>{ 
                         data = data.map(value => value.dataValues);
-                        let obj = data[0];
-                        resolve(obj);
-                })
-                .catch((err)=>reject("No results returned"))
+                        resolve(data[0]);
+                }).catch((err)=>reject("No results returned"))
         })
 }
 
