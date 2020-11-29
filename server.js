@@ -57,7 +57,33 @@ app.use(function (req, res, next) {
     next();
 })
 
-// ************ ROUTES *************
+//setting client-session
+app.use(clientSessions({
+    cookieName: "session",  // cookie name dictates the key name added to the request object
+    secret: "web322_a6", //long and unguessable string
+    duration: 2 * 60 * 1000, //2 mintues duration in ms
+    activeDuration: 1000 * 60 //session extension by each request
+}))
+
+//templates will have access to a session object = {{session.userName}}
+app.use(function(req, res, next) {
+    res.locals.session = req.session;
+    next();
+    });
+
+//helper middleware function to ensureLogin. if user is not logged in, redirect to the login page
+ensureLogin = (req, res, next) => {
+    if(!req.session.user){
+        res.redirect("/login");
+    }
+    else {
+        next();
+    }
+}
+
+// *************************************
+// ************ GET ROUTES *************
+// *************************************
 //sending the home page
 app.get("/", function (req, res) {
     res.render(path.join(__dirname, "views/home.hbs"))
@@ -68,8 +94,9 @@ app.get("/about", function (req, res) {
     res.render(path.join(__dirname, "views/about.hbs"))
 })
 
+// ********** GET EMPLOYEES ************
 //employees route
-app.get("/employees", function (req, res) {
+app.get("/employees", ensureLogin, function (req, res) {
     //getting employees by status
     if (req.query.status) {
         data.getEmployeesByStatus(req.query.status)
@@ -116,8 +143,8 @@ app.get("/employees", function (req, res) {
     }
 })
 
-
-app.get("/employee/:empNum", (req, res) => {
+//get employee by id
+app.get("/employee/:empNum", ensureLogin, (req, res) => {
     // initialize an empty object to store the values
     let viewData = {};
     data.getEmployeeByNum(req.params.empNum).then((data) => {
@@ -151,7 +178,7 @@ app.get("/employee/:empNum", (req, res) => {
 });
 
 //route to load the page with the form to add a new employee
-app.get("/employees/add", (req, res) => {
+app.get("/employees/add", ensureLogin, (req, res) => {
     data.getDepartments()
         .then((data) => {
             res.render("addEmployee", { departments: data })
@@ -163,7 +190,7 @@ app.get("/employees/add", (req, res) => {
 })
 
 //delete employee by id
-app.get("/employees/delete/:empNum", (req, res) => {
+app.get("/employees/delete/:empNum", ensureLogin, (req, res) => {
     data.deleteEmployeeByNum(req.params.empNum)
         .then(() => {
             res.redirect("/employees");
@@ -172,8 +199,9 @@ app.get("/employees/delete/:empNum", (req, res) => {
         })
 })
 
+// ********** GET DEPARTMENTS ************
 //delete department by id
-app.get("/departments/delete/:depNum", (req, res) => {
+app.get("/departments/delete/:depNum", ensureLogin, (req, res) => {
     data.deleteDepartmentByNum(req.params.depNum)
         .then(() => {
             res.redirect("/departments");
@@ -181,26 +209,14 @@ app.get("/departments/delete/:depNum", (req, res) => {
             res.status(500).send("Unable to Remove Employee / Employee not Found");
         })
 })
+
 //route to get the add for departments
-app.get("/departments/add", (req, res) => {
+app.get("/departments/add", ensureLogin, (req, res) => {
     res.render(path.join(__dirname, "/views/addDepartment.hbs"))
 })
 
-//route to load the page with all the images in a json format
-app.get("/images", (req, res) => {
-    fs.readdir("./public/images/uploaded", (err, image) => {
-        res.render("images", { "images": image });
-    })
-})
-
-////route to load the page with the form to add a new image
-app.get("/images/add", (req, res) => {
-    res.render(path.join(__dirname, "/views/addImage.hbs"))
-})
-
-
 //departments route
-app.get("/departments", function (req, res) {
+app.get("/departments", ensureLogin, function (req, res) {
     data.getDepartments()
         .then((data) => {
             res.render("departments", { departments: data })
@@ -209,7 +225,7 @@ app.get("/departments", function (req, res) {
 })
 
 //departments by id
-app.get("/department/:departmentId", (req, res) => {
+app.get("/department/:departmentId", ensureLogin, (req, res) => {
     data.getDepartmentById(req.params.departmentId)
         .then((data) => {
             res.render("department", { department: data });
@@ -219,15 +235,25 @@ app.get("/department/:departmentId", (req, res) => {
         )
 })
 
-
-//posts
-//post to image adding
-app.post("/images/add", upload.single('imageFile'), (req, res) => {
-    res.redirect('/images')
+// ********** GET IMAGES ************
+//route to load the page with all the images in a json format
+app.get("/images", ensureLogin, (req, res) => {
+    fs.readdir("./public/images/uploaded", (err, image) => {
+        res.render("images", { "images": image });
+    })
 })
 
+////route to load the page with the form to add a new image
+app.get("/images/add", ensureLogin, (req, res) => {
+    res.render(path.join(__dirname, "/views/addImage.hbs"))
+})
+
+// *************************************
+// ************ POST ROUTES ************
+// *************************************
+
 //post to employees adding
-app.post("/employees/add", (req, res) => {
+app.post("/employees/add", ensureLogin, (req, res) => {
     data.addEmployee(req.body)
         .then(() => {
             res.redirect('/employees');
@@ -236,14 +262,8 @@ app.post("/employees/add", (req, res) => {
         })
 })
 
-//post to departments adding
-app.post("/departments/add", (req, res) => {
-    data.addDepartment(req.body)
-        .then(() => { res.redirect('/departments') })
-        .catch((err) => { message: err });
-})
 //post to update employee
-app.post("/employee/update", (req, res) => {
+app.post("/employee/update", ensureLogin, (req, res) => {
     data.updateEmployee(req.body)
         .then((data) => {
             res.redirect("/employees")
@@ -253,8 +273,22 @@ app.post("/employee/update", (req, res) => {
         })
 });
 
+
+//post to image adding
+app.post("/images/add", upload.single('imageFile'), ensureLogin, (req, res) => {
+    res.redirect('/images')
+})
+
+
+//post to departments adding
+app.post("/departments/add", ensureLogin, (req, res) => {
+    data.addDepartment(req.body)
+        .then(() => { res.redirect('/departments') })
+        .catch((err) => { message: err });
+})
+
 //post to update department
-app.post("/departments/update", (req, res) => {
+app.post("/departments/update", ensureLogin, (req, res) => {
     data.updateDepartment(req.body)
         .then(() => {
             res.redirect("/departments")
