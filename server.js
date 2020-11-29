@@ -8,6 +8,7 @@
 const exphbs = require("express-handlebars")
 const dataServiceAuth = require('./data-service-auth');
 var data = require("./data-service") //requiring all functions from data-service.js
+var clientSessions = require("client-sessions")
 var express = require("express")
 var path = require("path")
 var multer = require("multer") //deal with images
