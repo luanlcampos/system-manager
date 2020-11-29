@@ -39,15 +39,14 @@ module.exports.registerUser = (userData) => {
         }
         else {
             let newUser = new User(userData);
-            newUser.save((err)=>{
+            newUser.save()
+            .then(()=>{resolve();})
+            .catch((err)=>{
                 if(err.code === 11000) {
                     reject("Username already taken.");
                 }
-                else if (err) {
-                    reject(`There was an error creating the user: ${err}`);
-                }
                 else {
-                    resolve();
+                    reject(`There was an error creating the user: ${err}`);
                 }
             })
         }
@@ -56,9 +55,10 @@ module.exports.registerUser = (userData) => {
 
 module.exports.checkUser = (userData) => {
     return new Promise((resolve, reject) => {
-        let users = User.find({"userName": userData.userName})
-        .then(() => {
+       User.find({"userName": userData.userName})
+        .then((users) => {
             if (!users) {
+                console.log("User error")
                 reject(`Unable to find user: ${userData.userName}`);
             }
             else if (users[0].password != userData.password){
@@ -82,7 +82,7 @@ module.exports.checkUser = (userData) => {
             }//else
         }) //then of find 
         .catch((err) => {
-            reject(`Unable to find user: ${userData.user}`);
+            reject(`Unable to find user: ${userData.userName}`);
         })
     })
 }
