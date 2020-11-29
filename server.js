@@ -248,10 +248,34 @@ app.get("/images/add", ensureLogin, (req, res) => {
     res.render(path.join(__dirname, "/views/addImage.hbs"))
 })
 
+// ********** GET SESSIONS ************
+//render login view
+app.get("/login", (req, res) => {
+    res.render("login");
+})
+
+//render register view
+app.get("/register", (req, res) => {
+    res.render("register");
+})
+
+//get logout
+app.get("/logout", (req, res) => {
+    req.session.reset(); //reset current session
+    //redirect to the home page
+    res.redirect("/");
+})
+
+//get user history
+app.get("userHistory", ensureLogin, (req, res) => {
+    res.render("userHistory");
+})
+
 // *************************************
 // ************ POST ROUTES ************
 // *************************************
 
+// ********** POST EMPLOYEES ***********
 //post to employees adding
 app.post("/employees/add", ensureLogin, (req, res) => {
     data.addEmployee(req.body)
@@ -273,13 +297,7 @@ app.post("/employee/update", ensureLogin, (req, res) => {
         })
 });
 
-
-//post to image adding
-app.post("/images/add", upload.single('imageFile'), ensureLogin, (req, res) => {
-    res.redirect('/images')
-})
-
-
+// ********** POST DEPARTMENTS *********
 //post to departments adding
 app.post("/departments/add", ensureLogin, (req, res) => {
     data.addDepartment(req.body)
@@ -297,6 +315,43 @@ app.post("/departments/update", ensureLogin, (req, res) => {
             console.log(err)
         })
 });
+
+// ********** POST IMAGES **************
+//post to image adding
+app.post("/images/add", upload.single('imageFile'), ensureLogin, (req, res) => {
+    res.redirect('/images')
+})
+
+// ********** POST SESSIONS ************
+//post the register form
+app.post("/register", (req, res) => {
+    dataServiceAuth.registerUser(req.body)
+    .then(()=> {
+        res.render("register", {successMessage: "User created"});
+    })
+    .catch((err)=> {
+        res.render("register", {errorMessage: err, userName: req.body.userName});
+    })
+})
+
+//post login form
+app.post("/login", (req, res) => {
+    req.body.userAgent = req.get('User-Agent');
+    dataServiceAuth.checkUser(req.body)
+    .then((user)=> {
+        //add the user data to the current session
+        req.session.user = {
+            userName: user.userName,
+            email: user.email,
+            loginHistory: user.loginHistory
+        }
+        res.redirect("/employees");
+    })
+    .catch((err) => {
+        res.render("/login", {errorMessage: err, userName: req.body.userName});
+    })
+})
+
 
 //all the other paths, send the not found page
 app.get("*", function (req, res) {
