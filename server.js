@@ -6,6 +6,7 @@
  Online (Heroku) Link: https://mysystemmanager.herokuapp.com/ * 
  ********************************************************************************/
 const exphbs = require("express-handlebars")
+const dataServiceAuth = require('./data-service-auth');
 var data = require("./data-service") //requiring all functions from data-service.js
 var express = require("express")
 var path = require("path")
@@ -163,21 +164,21 @@ app.get("/employees/add", (req, res) => {
 //delete employee by id
 app.get("/employees/delete/:empNum", (req, res) => {
     data.deleteEmployeeByNum(req.params.empNum)
-    .then(() => {
-        res.redirect("/employees");
-    }).catch((err) => {
-        res.status(500).send("Unable to Remove Employee / Employee not found");
-    })
+        .then(() => {
+            res.redirect("/employees");
+        }).catch((err) => {
+            res.status(500).send("Unable to Remove Employee / Employee not found");
+        })
 })
 
 //delete department by id
 app.get("/departments/delete/:depNum", (req, res) => {
     data.deleteDepartmentByNum(req.params.depNum)
-    .then(()=> {
-        res.redirect("/departments");
-    }).catch((err)=>{
-        res.status(500).send("Unable to Remove Employee / Employee not Found");
-    })
+        .then(() => {
+            res.redirect("/departments");
+        }).catch((err) => {
+            res.status(500).send("Unable to Remove Employee / Employee not Found");
+        })
 })
 //route to get the add for departments
 app.get("/departments/add", (req, res) => {
@@ -227,11 +228,11 @@ app.post("/images/add", upload.single('imageFile'), (req, res) => {
 //post to employees adding
 app.post("/employees/add", (req, res) => {
     data.addEmployee(req.body)
-    .then(()=> {
-        res.redirect('/employees');
-    }).catch((err) => {
-        res.status(500).send("Unable to Update Employee");
-    })
+        .then(() => {
+            res.redirect('/employees');
+        }).catch((err) => {
+            res.status(500).send("Unable to Update Employee");
+        })
 })
 
 //post to departments adding
@@ -269,12 +270,13 @@ app.get("*", function (req, res) {
 
 
 //first read the data, then if it returns a resolve, it loads the server
-data.initialize().then(() => {
-    app.listen(HTTP_PORT, () => {
-        console.log("Express http server listening on port http://localhost:" + HTTP_PORT)
-    })
-}).catch((err) => {
-    console.log(err)
-});
+data.initialize()
+    .then(dataServiceAuth.initialize)
+    .then(() => {
+        app.listen(HTTP_PORT, () => {
+            console.log("Express http server listening on port http://localhost:" + HTTP_PORT)
+        })
+    }).catch((err) => {
+        console.log(err)
+    });
 
-//app.listen(HTTP_PORT)

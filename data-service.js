@@ -1,3 +1,4 @@
+const dataServiceAuth = require('./data-service-auth');
 const Sequelize = require('sequelize');
 //Setting dabatase connection
 var sequelize = new Sequelize('dh3q1s84455hu', 'htijeihdyixvew', '2c34c779de747790c04e61fff70e825dc454761fb59b6eb9d312d860f09b539d', {
@@ -155,10 +156,8 @@ module.exports.getDepartmentById = (id) => {
                 Department.findAll({where: {departmentId: id}})
                 .then((data)=>{ 
                         data = data.map(value => value.dataValues);
-                        let obj = data[0];
-                        resolve(obj);
-                })
-                .catch((err)=>reject("No results returned"))
+                        resolve(data[0]);
+                }).catch((err)=>reject("No results returned"))
         })
 }
 
