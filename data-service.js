@@ -139,7 +139,7 @@ module.exports.updateDepartment = (departmentData) => {
                         if (departmentData[i] == ""){
                                 departmentData[i] = null;
                         }
-                }
+                } //
                 Department.update(departmentData, {where: {
                         departmentId: departmentData.departmentId
                         }
