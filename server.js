@@ -267,7 +267,7 @@ app.get("/logout", (req, res) => {
 })
 
 //get user history
-app.get("userHistory", ensureLogin, (req, res) => {
+app.get("/userHistory", ensureLogin, (req, res) => {
     res.render("userHistory");
 })
 
